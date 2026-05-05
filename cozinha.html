@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Língua de Fogo - Dashboard</title>
+
+  <!-- TAILWIND -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- CONFIG -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            barlow: ['Barlow', 'sans-serif'],
+          },
+          colors: {
+            primary: '#e65100',
+            dark: '#1a1a1a'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- FONT -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+</head>
+
+<body class="bg-[#121212] font-barlow min-h-screen overflow-x-hidden text-white">
+
+  <!-- FUNDO -->
+  <div class="fixed inset-0 -z-10 overflow-hidden">
+
+    <div class="absolute top-[-120px] left-[-120px] w-[400px] h-[400px] bg-orange-500/20 blur-3xl rounded-full"></div>
+
+    <div class="absolute bottom-[-120px] right-[-120px] w-[400px] h-[400px] bg-red-500/20 blur-3xl rounded-full"></div>
+
+  </div>
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-50 backdrop-blur-xl bg-black/40 border-b border-orange-500/20">
+
+    <div class="flex items-center justify-between px-6 py-4">
+
+      <!-- LOGO -->
+      <div class="flex items-center gap-4">
+
+        <img
+          src="/assets/logo.png"
+          alt="Logo"
+          class="w-16 h-16 rounded-3xl shadow-2xl object-cover border- border-orange-500/40"
+        >
+
+        <!-- STATUS -->
+        <div>
+
+          <div class="flex items-center gap-2">
+
+            <div
+              id="statusDot"
+              class="w-3 h-3 bg-red-500 rounded-full"
+            ></div>
+
+            <span
+              id="statusText"
+              class="font-bold text-red-400"
+            >
+              Offline
+            </span>
+
+          </div>
+
+          <p class="text-gray-400 text-sm mt-1">
+            Churrasqueira desconectada
+          </p>
+
+        </div>
+
+      </div>
+
+      <!-- BOTÃO -->
+      <button
+        id="refreshBtn"
+        class="bg-primary text-white px-6 py-3 rounded-2xl font-bold shadow-[0_0_25px_rgba(230,81,0,0.45)] hover:scale-105 transition"
+      >
+        Atualizar
+      </button>
+
+    </div>
+
+  </header>
+
+  <!-- CONTEÚDO -->
+  <main class="max-w-7xl mx-auto px-5 py-8">
+
+    <!-- TOPO -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5 mb-8">
+
+      <div>
+
+        <h1 class="text-5xl font-extrabold">
+          Pedidos Recebidos 
+        </h1>
+
+        <p class="text-gray-400 mt-2 text-lg">
+          Painel de pedidos da churrascaria
+        </p>
+
+      </div>
+
+      <!-- STATS -->
+      <div class="flex gap-4">
+
+        <div
+          id="pedidoCount"
+          class="bg-white/5 backdrop-blur-xl border border-orange-500/20 rounded-3xl px-6 py-5 shadow-2xl"
+        >
+
+          <p class="text-gray-400 text-sm">
+            Pedidos
+          </p>
+
+          <h3 class="text-4xl font-extrabold text-orange-400 mt-1">
+            0
+          </h3>
+
+        </div>
+
+        <div
+          class="bg-white/5 backdrop-blur-xl border border-orange-500/20 rounded-3xl px-6 py-5 shadow-2xl"
+        >
+
+          <p class="text-gray-400 text-sm">
+            Hoje
+          </p>
+
+          <h3 class="text-4xl font-extrabold text-yellow-400 mt-1">
+            R$ 0
+          </h3>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ALERTA -->
+    <div
+      id="erroBox"
+      class="relative overflow-hidden bg-[#1c1c1c]/90 backdrop-blur-xl border border-red-500/20 rounded-[32px] p-7 shadow-2xl"
+    >
+
+      <!-- LINHA -->
+      <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-orange-500 to-red-600"></div>
+
+      <div class="flex items-start gap-5">
+
+        <!-- ÍCONE -->
+        <div class="min-w-[75px] min-h-[75px] rounded-3xl bg-red-500/10 flex items-center justify-center border border-red-500/20">
+
+          <span class="text-4xl">
+            🔥
+          </span>
+
+        </div>
+
+        <!-- TEXTO -->
+        <div class="flex-1">
+
+          <div class="flex items-center gap-3 mb-3">
+
+            <h2 class="text-3xl font-extrabold text-orange-400">
+              O fogo apagou!
+            </h2>
+
+            <span class="bg-red-500/10 text-red-400 px-4 py-1 rounded-full text-sm font-bold border border-red-500/20">
+              Sem conexão
+            </span>
+
+          </div>
+
+          <p class="text-gray-300 text-lg leading-8">
+            Não foi possível carregar os pedidos da churrasqueira.
+            Verifique a conexão com a API e reacenda o sistema.
+          </p>
+
+          <!-- BOTÕES -->
+          <div class="flex gap-4 mt-6">
+
+            <button
+              onclick="atualizarPedidos()"
+              class="bg-primary hover:brightness-110 transition text-white px-6 py-4 rounded-2xl font-bold shadow-[0_0_25px_rgba(230,81,0,0.45)]"
+            >
+              Reacender Sistema
+            </button>
+
+            <button
+              class="bg-white/5 border border-white/10 hover:bg-white/10 transition text-gray-200 px-6 py-4 rounded-2xl font-bold"
+            >
+              Ver detalhes
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- PEDIDOS -->
+    <div
+      id="pedidosArea"
+      class="hidden mt-8 grid gap-6"
+    >
+
+    </div>
+
+  </main>
+
+  <!-- BOTÃO FLUTUANTE -->
+  <button
+    class="fixed bottom-6 right-6 bg-primary w-16 h-16 rounded-3xl shadow-[0_0_35px_rgba(230,81,0,0.5)] text-white text-2xl hover:scale-105 transition"
+  >
+    🔥
+  </button>
+
+  <!-- SCRIPT -->
+  <script>
+
+    const pedidosFake = [
+      {
+        id: 2041,
+        cliente: 'Carlos Andrade',
+        total: 'R$ 142,00',
+        itens: [
+          '2x Picanha na Brasa',
+          '1x Costela BBQ',
+          '2x Coca-Cola'
+        ]
+      },
+      {
+        id: 2042,
+        cliente: 'Fernanda Lima',
+        total: 'R$ 98,00',
+        itens: [
+          '1x Chorizo Premium',
+          '1x Batata Rústica',
+          '1x Suco Natural'
+        ]
+      },
+      {
+        id: 2043,
+        cliente: 'Ricardo Alves',
+        total: 'R$ 187,00',
+        itens: [
+          '1x Parrilla Completa',
+          '2x Cerveja Artesanal',
+          '1x Linguiça Brasa'
+        ]
+      }
+    ]
+
+    const refreshBtn = document.getElementById('refreshBtn')
+    const pedidosArea = document.getElementById('pedidosArea')
+    const erroBox = document.getElementById('erroBox')
+    const pedidoCount = document.getElementById('pedidoCount')
+
+    const statusDot = document.getElementById('statusDot')
+    const statusText = document.getElementById('statusText')
+
+    refreshBtn.addEventListener('click', atualizarPedidos)
+
+    function atualizarPedidos(){
+
+      refreshBtn.innerHTML = 'Conectando...'
+
+      setTimeout(() => {
+
+        // STATUS
+        statusDot.classList.remove('bg-red-500')
+        statusDot.classList.add('bg-green-500', 'animate-pulse')
+
+        statusText.innerHTML = 'Online'
+        statusText.classList.remove('text-red-400')
+        statusText.classList.add('text-green-400')
+
+        // ESCONDER ERRO
+        erroBox.classList.add('hidden')
+
+        // MOSTRAR PEDIDOS
+        pedidosArea.classList.remove('hidden')
+
+        renderizarPedidos()
+
+        refreshBtn.innerHTML = 'Atualizar'
+
+      }, 1500)
+
+    }
+
+    function renderizarPedidos(){
+
+      pedidosArea.innerHTML = ''
+
+      document.querySelector('#pedidoCount h3').innerHTML =
+        pedidosFake.length
+
+      pedidosFake.forEach((pedido) => {
+
+        let itensHTML = ''
+
+        pedido.itens.forEach((item) => {
+
+          itensHTML += `
+            <div class="flex justify-between text-gray-300">
+              <span>${item}</span>
+              <span class="text-orange-400">🔥</span>
+            </div>
+          `
+
+        })
+
+        pedidosArea.innerHTML += `
+
+          <div
+            class="bg-[#1c1c1c]/90 backdrop-blur-xl rounded-[32px] border border-orange-500/20 shadow-[0_10px_40px_rgba(0,0,0,0.5)] p-7 hover:scale-[1.01] transition duration-300"
+          >
+
+            <!-- TOPO -->
+            <div class="flex justify-between items-start mb-6">
+
+              <div>
+
+                <div class="flex items-center gap-3">
+
+                  <h3 class="text-3xl font-extrabold">
+                    Pedido #${pedido.id}
+                  </h3>
+
+                  <span class="bg-orange-500/10 text-orange-400 px-4 py-1 rounded-full text-xs font-bold border border-orange-500/20">
+                    Na Brasa
+                  </span>
+
+                </div>
+
+                <p class="text-gray-400 mt-2 text-lg">
+                  ${pedido.cliente}
+                </p>
+
+              </div>
+
+              <!-- TOTAL -->
+              <div class="text-right">
+
+                <p class="text-gray-500 text-sm">
+                  Total
+                </p>
+
+                <h4 class="text-orange-400 text-4xl font-extrabold">
+                  ${pedido.total}
+                </h4>
+
+              </div>
+
+            </div>
+
+            <!-- ITENS -->
+            <div class="bg-black/30 rounded-3xl border border-orange-500/10 p-5">
+
+              <h5 class="font-bold mb-4 text-lg text-orange-300">
+                Carnes e acompanhamentos
+              </h5>
+
+              <div class="space-y-3">
+                ${itensHTML}
+              </div>
+
+            </div>
+
+            <!-- BOTÕES -->
+            <div class="flex gap-4 mt-6">
+
+              <button
+                onclick="aceitarPedido(${pedido.id})"
+                class="flex-1 bg-primary hover:brightness-110 text-white py-4 rounded-2xl font-bold shadow-[0_0_25px_rgba(230,81,0,0.45)] transition"
+              >
+                Preparar Pedido
+              </button>
+
+              <button
+                onclick="recusarPedido(${pedido.id})"
+                class="bg-red-500/10 hover:bg-red-500/20 text-red-400 px-6 rounded-2xl font-bold transition border border-red-500/20"
+              >
+                Recusar
+              </button>
+
+            </div>
+
+          </div>
+
+        `
+
+      })
+
+    }
+
+    function aceitarPedido(id){
+
+      alert('Pedido #' + id + ' enviado para a churrasqueira!')
+
+    }
+
+    function recusarPedido(id){
+
+      alert('Pedido #' + id + ' recusado.')
+
+    }
+
+  </script>
+
+</body>
+</html>
