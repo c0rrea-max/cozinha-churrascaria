@@ -313,9 +313,12 @@
             <div id="carrinho-itens-container" class="p-5 flex-1 overflow-y-auto flex flex-col gap-4">
                 <!-- Itens serão injetados aqui via JS -->
             </div>
+            
 
             <!-- Rodapé Modal (Checkout) -->
             <div class="p-5 border-t bg-gray-50 rounded-b-3xl sm:rounded-b-2xl">
+                <input type="text" id="cliente-nome" placeholder="Seu Nome Completo" class="w-fullmb-3 p-3 border border-gray-300 rounded-lg outline-none focus:border-primary">
+                <input type="text" id="cliente-endereco" placeholder="Endereço de Entrega (Rua, Número, Bairro)" class="w-full mb-4 p-3 border border-gray-300 rounded-lg outline-none focus:border-primary">
                 <div class="flex justify-between items-center mb-4">
                     <span class="text-lg font-bold">Total do Pedido:</span>
                     <span id="modal-carrinho-total" class="text-2xl font-black text-primary">R$ 0,00</span>
@@ -345,6 +348,22 @@
         });
     </script>
 
+    <!-- script botao categoria -->
+    <script>
+        const menuBtn = document.getElementById("menuBtn");
+        const closeBtn = document.getElementById("closeBtn");
+
+
+        menuBtn.addEventListener("click", () => {
+            mobileMenu.style.right = "0";
+        });
+
+        closeBtn.addEventListener("click", () => {
+            mobileMenu.style.right = "-100%";
+        });
+    </script>
+
+    <!-- script botao categoria -->
     <!-- script botao categoria -->
     <script>
         const menuBtn = document.getElementById("menuBtn");
@@ -591,54 +610,83 @@
         }
 
         //fechar pedido (gps - api)
-        function fecharPedido() {
+        async function fecharPedido() {
             if (carrinho.length === 0) {
-                const btnPedido = document.getElementById('btn-fechar-pedido');
-                if (!btnPedido) return;
+                alert("Seu carrinho está vazio!");
+                return;
+            }
 
-                const btnOriginalText = btnPedido.innerText;
-                btnPedido.innerText = 'Buscando localização...';
+            const nome = document.getElementById('cliente-nome').value;
+            const endereco = document.getElementById('cliente-endereco').value;
 
-                navigator.geolocation.getCurrentPosition(
-                    //callback de sucesso
-                    (posicao) => {
-                        const lat = posicao.coords.latitude;
-                        const lon = posicao.coords.longitude;
+            if (!nome || !endereco) {
+                alert("Por favor, preencha seu nome e endereço de entrega!");
+                return;
+            }
 
-                        btnPedido.innerText = btnOriginalText;
+            const total = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
+            
+            const payloadPedido = {
+                cliente_nome: nome,
+                cliente_endereco: endereco,
+                itens: carrinho,
+                total: total
+            };
 
-                        alert(`Pedido fechado! \nSua localização: ${lat.toFixed(4)}, ${lon.toFixed(4)}\nOs dados do carrinho serão limpos`);
+            const btnFechar = document.getElementById('btn-fechar-pedido');
+            btnFechar.innerText = "Enviando...";
+            btnFechar.disabled = true;
+            btnFechar.classList.add("opacity-50");
 
-                        carrinho = [];
-                        fecharModalCarrinho();
-                        atualizarCarrinho();
+            try {
+                const resposta = await fetch(`${API_URL}/pedidos`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
                     },
-                    //callback de erro
-                    (erro) => {
-                        btnPedido.innerText = btnOriginalText;
-                        console.error(erro);
-                        alert('Não foi possível obter sua localização.');
-                        carrinho = [];
-                        fecharModalCarrinho();
-                        atualizarCarrinho();
-                    }
-                );
-            }else{
-                alert(`Pedido fechado com sucesso! \n(navegador sem suporte GPS)`);
+                    body: JSON.stringify(payloadPedido)
+                });
+
+                if (!resposta.ok) throw new Error('Erro ao enviar pedido');
+
+                alert("Pedido enviado com sucesso para a cozinha!");
+                
+                // Limpar tudo
+                document.getElementById('cliente-nome').value = '';
+                document.getElementById('cliente-endereco').value = '';
                 carrinho = [];
+                atualizarCarrinho();
                 fecharModalCarrinho();
+            } catch (erro) {
+                console.error(erro);
+                alert("Ops! Ocorreu um problema de conexão. Tente novamente.");
+            } finally {
+                btnFechar.innerText = "Fechar Pedido";
+                btnFechar.disabled = false;
+                btnFechar.classList.remove("opacity-50");
+            }
+        }
+
+        function inicializarCarrinho() {
+            const salvo = localStorage.getItem('haruy_carrinho');
+            if (salvo) {
+                carrinho = JSON.parse(salvo);
                 atualizarCarrinho();
             }
         }
+        
+        carregarCategorias();
         inicializarCarrinho();
 
-        if('serviceWorker' in navigator){
+        // 🚀 AULA 12: REGISTRANDO O SERVICE WORKER (PARA TRANSFORMAR EM PWA)
+        if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
                 .then(reg => console.log('Service Worker Registrado no Porto! 🍖', reg))
-                .catch(err => console.error('Erro ao preparar o filé: ', err));
-            })
+                .catch(err => console.error('Erro ao preparar o sushi: ', err));
+            });
         }
+
        
     </script>
 

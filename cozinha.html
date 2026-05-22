@@ -27,6 +27,7 @@
 
   <!-- FONT -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
+
   <link
     href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&display=swap"
     rel="stylesheet"
@@ -55,7 +56,7 @@
         <img
           src="assets/logo.png"
           alt="Logo"
-          class="w-16 h-16 rounded-3xl shadow-xl object-cover border border-orange-300"
+          class="w-18 h-16 rounded-3xl shadow-xl object-cover border border-orange-300"
         >
 
         <!-- STATUS -->
@@ -190,8 +191,11 @@
 
         }
 
-        const pedidos =
+        const dados =
           await resposta.json()
+
+        const pedidos =
+          dados.pedidos || dados
 
         contador.innerHTML =
           pedidos.length
@@ -208,7 +212,7 @@
 
       } catch(erro){
 
-        console.log(erro)
+        console.error("ERRO COMPLETO:", erro)
 
         container.innerHTML = `
 
@@ -243,7 +247,7 @@
       container.innerHTML = ''
 
       // SEM PEDIDOS
-      if(pedidos.length === 0){
+      if(!pedidos || pedidos.length === 0){
 
         container.innerHTML = `
 
@@ -274,14 +278,17 @@
 
         let itens = []
 
+        // PROTEÇÃO JSON
         try {
 
           itens =
             typeof pedido.itens === 'string'
             ? JSON.parse(pedido.itens)
-            : pedido.itens
+            : pedido.itens || []
 
         } catch {
+
+          console.log("Erro itens:", pedido.itens)
 
           itens = []
 
@@ -300,7 +307,7 @@
               </span>
 
               <span class="text-gray-500">
-                R$ ${(item.preco || 0).toFixed(2)}
+                R$ ${Number(item.preco || 0).toFixed(2)}
               </span>
 
             </div>
@@ -360,7 +367,7 @@
 
                 <h4 class="text-primary text-4xl font-extrabold">
 
-                  R$ ${(pedido.total || 0).toFixed(2)}
+                  R$ ${Number(pedido.total || 0).toFixed(2)}
 
                 </h4>
 
@@ -379,7 +386,7 @@
 
               <div class="space-y-2">
 
-                ${htmlItens}
+                ${htmlItens || '<p class="text-gray-400">Sem itens</p>'}
 
               </div>
 
